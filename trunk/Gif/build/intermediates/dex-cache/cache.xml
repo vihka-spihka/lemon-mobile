@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<items version="2" >
+
+    <item
+        jar="C:\Documents and Settings\Telepuzik\AndroidStudioProjects\Gif\app\build\intermediates\exploded-aar\net.danlew\android.joda\2.4.0\classes.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="fbf3f2e9e9eb8c9aeb41977952ceb5f613c4baf1">
+        <dex dex="C:\Documents and Settings\Telepuzik\AndroidStudioProjects\Gif\app\build\intermediates\pre-dexed\debug\classes-5e701e4198a637626f16019883d1c918d6eb25b9.jar" />
+    </item>
+    <item
+        jar="C:\Documents and Settings\Telepuzik\AndroidStudioProjects\Gif\app\build\intermediates\exploded-aar\com.android.support\appcompat-v7\21.0.3\classes.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="81d42bf983a8741f4888a6e333e454e4a5e0eeb7">
+        <dex dex="C:\Documents and Settings\Telepuzik\AndroidStudioProjects\Gif\app\build\intermediates\pre-dexed\debug\classes-9402c462afaee669a38e6517fdf0a793c90037d9.jar" />
+    </item>
+    <item
+        jar="C:\Documents and Settings\Telepuzik\AndroidStudioProjects\Gif\app\build\intermediates\exploded-aar\com.android.support\support-v4\21.0.3\classes.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="2c91c949a45a21cdecf26e03951e46c7beec9ad8">
+        <dex dex="C:\Documents and Settings\Telepuzik\AndroidStudioProjects\Gif\app\build\intermediates\pre-dexed\debug\classes-1eccff1c882d3037c4afc4645774b07c357a2c9e.jar" />
+    </item>
+    <item
+        jar="C:\Documents and Settings\Telepuzik\AndroidStudioProjects\Gif\app\build\intermediates\exploded-aar\com.android.support\support-v4\21.0.3\libs\internal_impl-21.0.3.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="01ec05bfbafcc07646ba813000bf2ef11742dd03">
+        <dex dex="C:\Documents and Settings\Telepuzik\AndroidStudioProjects\Gif\app\build\intermediates\pre-dexed\debug\internal_impl-21.0.3-b6819cf817ef4854957065fda064d6d5648ddedc.jar" />
+    </item>
+    <item
+        jar="C:\Documents and Settings\Telepuzik\AndroidStudioProjects\Gif\app\build\intermediates\exploded-aar\Gif\vksdk_library\unspecified\classes.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="85072b1f19314fcdd3045743174d8a00d003b5c9">
+        <dex dex="C:\Documents and Settings\Telepuzik\AndroidStudioProjects\Gif\app\build\intermediates\pre-dexed\debug\classes-12cddf214ad908bf736b927717da08ced9c30573.jar" />
+    </item>
+    <item
+        jar="C:\Documents and Settings\Telepuzik\AppData\Local\Android\sdk\extras\android\m2repository\com\android\support\support-annotations\21.0.3\support-annotations-21.0.3.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="4b74cefe1f0c1b819e7260c8627a14674e37fd35">
+        <dex dex="C:\Documents and Settings\Telepuzik\AndroidStudioProjects\Gif\app\build\intermediates\pre-dexed\debug\support-annotations-21.0.3-85ef16ecd62cc4c93e98c759198988453e5779a7.jar" />
+    </item>
+
+</items>
