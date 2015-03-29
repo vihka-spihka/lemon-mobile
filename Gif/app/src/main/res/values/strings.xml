@@ -4,6 +4,6 @@
     <string name="app_name">Gif</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
-    <string name="title_login">Login</string>
+    <string name="title_login">Login VK and Google+</string>
 
 </resources>

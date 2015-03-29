@@ -1,10 +1,19 @@
 package com.example.telepuzik.gif;
 
+import android.accounts.AccountManager;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+
+import com.google.android.gms.auth.GoogleAuthException;
+import com.google.android.gms.auth.GoogleAuthUtil;
+import com.google.android.gms.auth.UserRecoverableAuthException;
+import com.google.android.gms.common.AccountPicker;
 import com.vk.sdk.VKAccessToken;
 import com.vk.sdk.VKScope;
 import com.vk.sdk.VKSdk;
@@ -20,13 +29,26 @@ import com.vk.sdk.api.model.VKApiUserFull;
 import com.vk.sdk.api.model.VKUsersArray;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 
 public class MainActivity extends FragmentActivity implements MainUiFragment.Callback {
 
+    private final static String G_PLUS_SCOPE ="https://www.googleapis.com/auth/plus.login";
+    private final static String USERINFO_SCOPE ="https://www.googleapis.com/auth/userinfo.profile";
+    private final static String EMAIL_SCOPE ="https://www.googleapis.com/auth/userinfo.email";
+    private final static String SCOPES = G_PLUS_SCOPE + " " + USERINFO_SCOPE + " " + EMAIL_SCOPE;
+
     private static final String VK_APP_ID = "4818942";
+    interface Callback {
+        void onLoginButtonClick();
+    }
+
+    private Callback callback;
+    private Button loginButton;
 
     private final VKSdkListener sdkListener = new VKSdkListener() {
 
@@ -99,6 +121,35 @@ public class MainActivity extends FragmentActivity implements MainUiFragment.Cal
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         VKUIHelper.onActivityResult(this, requestCode, resultCode, data);
+
+        if (requestCode == 123 && resultCode == RESULT_OK) {
+            final String accountName = data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
+            AsyncTask<Void, Void, String> getToken = new AsyncTask<Void, Void, String>() {
+                String token;
+                @Override
+                protected String doInBackground(Void... params) {
+                    try {
+                        token = GoogleAuthUtil.getToken(MainActivity.this, accountName,SCOPES);
+                        return token;
+
+                    } catch (UserRecoverableAuthException userAuthEx) {
+                        startActivityForResult(userAuthEx.getIntent(), 123);
+                    }  catch (IOException ioEx) {
+                        Log.d("MyLemonProject", "IOException");
+                    }  catch (GoogleAuthException fatalAuthEx)  {
+                        Log.d("MyLemonProject", "Fatal Authorization Exception" + fatalAuthEx.getLocalizedMessage());
+                    }
+                    return token;
+                }
+
+                @Override
+                protected void onPostExecute(String token) {
+                    //reg(token);//тут передаем токен на проверку на сервер(не понял)
+                }
+
+            };
+            getToken.execute(null, null, null);
+        }
     }
 
     @Override
@@ -115,39 +166,13 @@ public class MainActivity extends FragmentActivity implements MainUiFragment.Cal
         if (currentRequest != null) {
             currentRequest.cancel();
         }
+/*
         currentRequest = VKApi.friends().get(VKParameters.from(VKApiConst.FIELDS, "id,first_name,last_name,bdate"));
         currentRequest.executeWithListener(new VKRequest.VKRequestListener() {
             @Override
             public void onComplete(VKResponse response) {
                 super.onComplete(response);
                 //Log.d("MyLemonProject", "onComplete " + response);
-
-                final List<User> users = new ArrayList<User>();
-
-                VKUsersArray usersArray = (VKUsersArray) response.parsedModel;
-                final String[] formats = new String[]{"dd.MM.yyyy", "dd.MM"};
-
-                for (VKApiUserFull userFull : usersArray) {
-                    DateTime birthDate = null;
-                    String format = null;
-                    if (!TextUtils.isEmpty(userFull.bdate)) {
-                        for (int i = 0; i < formats.length; i++) {
-                            format = formats[i];
-                            try {
-                                birthDate = DateTimeFormat.forPattern(format).parseDateTime(userFull.bdate);
-                            } catch (Exception ignored) {
-                            }
-                            if (birthDate != null) {
-                                break;
-                            }
-                        }
-
-                    }
-                    users.add(new User(userFull.toString(), birthDate, format));
-                }
-
-                uiFragment.setUsers(users);
-
             }
 
             @Override
@@ -167,12 +192,15 @@ public class MainActivity extends FragmentActivity implements MainUiFragment.Cal
                 super.onProgress(progressType, bytesLoaded, bytesTotal);
                 //Log.d("MyLemonProject", "onProgress " + progressType + " " + bytesLoaded + " " + bytesTotal);
             }
-        });
+        });*/
     }
 
     @Override
     public void onLoginButtonClick() {
-        VKSdk.authorize(VKScope.FRIENDS, VKScope.WALL);//DOCS
+        VKSdk.authorize(VKScope.DOCS);
     }
+
+
+
 
 }
