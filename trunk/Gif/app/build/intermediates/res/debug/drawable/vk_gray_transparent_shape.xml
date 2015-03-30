@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-
-<shape xmlns:android="http://schemas.android.com/apk/res/android">
-    <solid android:color="@color/vk_black_pressed"/>
-</shape><!-- From: file:/C:/Documents%20and%20Settings/Telepuzik/AndroidStudioProjects/Gif/vksdk_library/src/main/res/drawable/vk_gray_transparent_shape.xml --><!-- From: file:/C:/Documents%20and%20Settings/Telepuzik/AndroidStudioProjects/Gif/app/build/intermediates/exploded-aar/Gif/vksdk_library/unspecified/res/drawable/vk_gray_transparent_shape.xml -->
