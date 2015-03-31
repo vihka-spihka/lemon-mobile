@@ -1,16 +1,24 @@
 package ru.example.telepuzik.gif;
 
+import android.app.AlertDialog;
 import android.app.ListActivity;
 
 
 import android.accounts.AccountManager;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.ScrollView;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.auth.GoogleAuthException;
 import com.google.android.gms.auth.GoogleAuthUtil;
@@ -36,12 +44,14 @@ import java.util.Objects;
 
 public class MainActivity extends ListActivity {
 
-    private final static String G_PLUS_SCOPE ="oauth2:https://www.googleapis.com/auth/plus.me";//права доступа
+/*    private final static String G_PLUS_SCOPE ="oauth2:https://www.googleapis.com/auth/plus.me";//права доступа
     private final static String USER_INFO_SCOPE ="https://www.googleapis.com/auth/userinfo.profile";//получение имя фамилии фото и тд
     private final static String EMAIL_SCOPE ="https://www.googleapis.com/auth/userinfo.email";//получение email
     //private final static String FOTO_SCOPE ="https://www.googleapis.com/auth/userinfo.photo";//получение фото
     private final static String SCOPES = G_PLUS_SCOPE + " " + USER_INFO_SCOPE + " " + EMAIL_SCOPE;
-    String tokenGoogle;
+    String tokenGoogle;*/
+    private static final String PREF_TOKEN = "token";
+    private GAuthHelper gah;
     private static final String VK_APP_ID = "4818942";
     private VKRequest currentRequest;
 
@@ -94,7 +104,6 @@ public class MainActivity extends ListActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
-        //exitButton.setVisibility(View.VISIBLE);
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
@@ -111,10 +120,9 @@ public class MainActivity extends ListActivity {
                 Log.d("VkDemoApp", "exit");
                 VKSdk.getAccessToken().accessToken=null;
                 VKSdk.logout();
-                tokenGoogle=null;
                 Log.d("VkDemoApp", "log on/off " + VKSdk.isLoggedIn());
                 Log.d("VkDemoApp", "Token VK " + VKSdk.getAccessToken());
-                Log.d("VkDemoApp", "google token" +  tokenGoogle);
+                Log.d("VkDemoApp", "google token" +  PREF_TOKEN);
                 loginButton.setVisibility(View.VISIBLE);
                 exitButton.setVisibility(View.GONE);
             }
@@ -124,11 +132,32 @@ public class MainActivity extends ListActivity {
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Log.d("VkDemoApp", "authorize");
+                Log.d("VkDemoApp", "authorize ");
                 VKSdk.authorize(VKScope.DOCS);
 
-                Intent intent = AccountPicker.newChooseAccountIntent(null, null, new String[]{"com.google"},false, null, null, null, null);
-                startActivityForResult(intent, 123);
+                //Intent intent = AccountPicker.newChooseAccountIntent(null, null, new String[]{"com.google"},false, null, null, null, null);
+                //startActivityForResult(intent, 123);
+                gah = new GAuthHelper(MainActivity.this);
+
+                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
+                String authToken = prefs.getString(PREF_TOKEN, "");
+                Log.d("VkDemoApp", "Click authToken " +authToken);
+                if (authToken.length()==0) { // token not found, need authorization
+                    final String[] accn = gah.getAccNames();
+                    if (accn.length==0) {
+                        Toast.makeText(MainActivity.this, "Stored Google accounts not found", Toast.LENGTH_LONG).show();
+                    } else {
+                        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                        builder.setTitle("Select a Google account");
+                        builder.setItems(accn, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, final int which) {
+                                saveToken(accn[which]);
+                            }
+                        }).create().show();
+                    }
+                } else {     // use stored token
+                    loadGDocs(authToken);
+                }
             }
         });
 
@@ -142,6 +171,57 @@ public class MainActivity extends ListActivity {
 
     }
 
+
+    private void saveToken(String accname) {
+        Log.d("VkDemoApp", "Main SaveToken ");
+        gah.getAuthToken(accname, new GAuthHelper.OAuthCallbackListener() {
+            @Override
+            public void callback(String authToken) {
+                if (authToken==null) {
+                    Toast.makeText(MainActivity.this, "Operation cancelled", Toast.LENGTH_LONG).show();
+                } else {
+                    PreferenceManager.getDefaultSharedPreferences(MainActivity.this).edit().putString(PREF_TOKEN, authToken).commit();
+                    Log.d("VkDemoApp", "SaveToken authToken " +authToken);
+                    loadGDocs(authToken);
+                }
+            }
+        });
+    }
+
+    private void loadGDocs(final String token) {
+        Log.d("VkDemoApp", "loadGDocs mainact");
+        new DocsLoader(this){
+            protected void onPostExecute(String[] result) {
+                ScrollView sw = new ScrollView(MainActivity.this);
+                LinearLayout ll = new LinearLayout(MainActivity.this);
+                ll.setOrientation(LinearLayout.VERTICAL);
+
+                if (result!=null) {
+                    Log.d("VkDemoApp", "result1 " + result);
+                    for (String s : result) {
+                        Log.d("VkDemoApp", "result2 " + result);
+                        Log.d("VkDemoApp", "s " + s);
+                        TextView tw = new TextView(MainActivity.this);
+                        tw.setText(s);
+                        ll.addView(tw);
+                    }
+                } else { // token expired: reload
+                    Log.d("VkDemoApp", "loadGDocs mainact else token expired: reload");
+                    Log.d("VkDemoApp", "token " + token);
+                    gah.invalidateToken(token);
+                    PreferenceManager.getDefaultSharedPreferences(MainActivity.this).edit().putString(PREF_TOKEN, "").commit();
+                    startActivity(new Intent(MainActivity.this, MainActivity.class));
+                    finish();
+                }
+                sw.addView(ll);
+                setContentView(sw);
+                super.onPostExecute(result);
+            };
+        }.execute(token);
+
+    }
+
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -153,7 +233,7 @@ public class MainActivity extends ListActivity {
         super.onActivityResult(requestCode, resultCode, data);
         VKUIHelper.onActivityResult(this, requestCode, resultCode, data);//vk
 
-
+/*
         if (requestCode == 123 && resultCode == RESULT_OK) {//--------------------------------------------Google+
             final String accountName = data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
             AsyncTask<Void, Void, String> getToken = new AsyncTask<Void, Void, String>() {
@@ -179,11 +259,11 @@ public class MainActivity extends ListActivity {
                 protected void onPostExecute(String token) {
                     Log.d("VkDemoApp", "RegToken ");
                     //reg(tokenGoogle);
-                }*/
+                }
 
             };
             getToken.execute(null, null, null);
-        }//---------------------------------------------------------------------------------------------------
+        }//---------------------------------------------------------------------------------------------------*/
     }
 
     @Override
